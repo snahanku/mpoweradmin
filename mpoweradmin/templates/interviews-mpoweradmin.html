@@ -1,0 +1,512 @@
+{% extends 'mpoweradmin-index.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}
+<title>mpower - Company dashboard - All interviews</title>
+
+{% endblock %}
+{% block header %}
+<style>
+    .popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+#close-popup {
+    margin-top: 10px;
+}
+.pxp-company-dashboard-job-percent{
+    font-size: 12px;
+    font-weight: 500;
+}
+
+</style>
+{% endblock header %}
+{% block content %}
+
+<div class="pxp-dashboard-content-details">
+    {% if messages %}
+        {% for message in messages %}
+         {% if message.tags %}  
+         <script>alert('{{ message }}')</script>
+        {% endif %}
+        {% endfor %}
+    {% endif %}
+    <h1>Interviews</h1>
+    <p class="pxp-text-light">Interviews that are scheduled to evaluate candidates.</p>
+
+    <div class="mt-4 mt-lg-5">
+        <div class="row justify-content-between align-content-center">
+            <div class="col-auto order-2 order-sm-1">
+                <div class="pxp-company-dashboard-jobs-bulk-actions mb-3">
+                    <select class="form-select" name="act">
+                        <option value="a">Bulk actions</option>
+                        {% comment %} <option>Edit</option> {% endcomment %}
+                        <option value="c">Done</option>
+                        <option value="b">Delete</option>
+                    </select>
+                    <button class="btn ms-2" onclick="multiple()">Apply</button>
+                </div>
+            </div>
+            <div class="col-auto order-1 order-sm-2">
+                <div class="pxp-company-dashboard-jobs-search mb-3">
+                    <div class="pxp-company-dashboard-jobs-search-results me-3">{{ count }} Interviews</div>
+                    <div class="pxp-company-dashboard-jobs-search-search-form">
+                        <div class="input-group">
+                            <span class="input-group-text" style="background: white"><span class="fa fa-search"></span></span>
+                            <input type="text" class="form-control" placeholder="Search interviews..." id="search">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle" id="table">
+                <thead>
+                    <tr>
+                        <th class="pxp-is-checkbox" style="width: 1%;"><input type="checkbox" onClick="toggle(this)" class="form-check-input" name="all"></th>
+                        <th style="width: 15%;">Name</th>
+                        <th style="width: 15%;">Date<span class="fa fa-angle-up ms-3"></span></th>
+                        <th style="width: 15%;">Link</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 15%;">&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in pe %}
+                    <tr>
+                        <td><input type="checkbox" name="chek" class="form-check-input" value={{ i.int_id }}></td>
+                        <td>
+                            <a href="#">
+                                <div class="pxp-company-dashboard-job-title" id="pxp-candidate-modal-button" data-bs-target="#pxp-candidate-modal" data-bs-toggle="modal" onclick="candidatemodal('{{i.user_id}}')">{{ i.name }}</div>
+                            </a>
+                        </td>
+                        <td><div class="pxp-company-dashboard-job-date mt-1">{{ i.date }}</div></td>
+                        <td><a href={{i.link}} target="_blank" class="pxp-company-dashboard-job-date mt-1">{{ i.link }}</div></td>
+                        {% if i.panel_req == 2 %}
+                        <td><div class="pxp-company-dashboard-job-status"><span class="badge rounded-pill bg-success">Assigned</span></div></td>
+                        {% else %}
+                        <td><div class="pxp-company-dashboard-job-status"><span class="badge rounded-pill bg-secondary">Pending</span></div></td>
+                        {% endif %}
+                        <td>
+                            <div class="pxp-dashboard-table-options">
+                                <ul class="list-unstyled">
+                                    <!--<li><button title="Feedback Info" onclick="feedb({{i.int_id}})" href="#" data-bs-target="#pxp-feedback-modal" data-bs-toggle="modal"><span class="fa fa-eye"></span></button></li>-->
+                                    {% if i.panel_req == 1 %}
+                                    <li><button title="Assign panel" onclick="showPopup('{{i.int_id}}')"><span class="fa fa-check"></span></button></li>
+                                    {% elif i.panel_req == 2 %}
+                                    <li><button title="Panel assigned" ><span class="fa fa-check" style="color: green;"></span></button></li>
+                                    {% endif %}
+                                    <input style="display: none" value={{i.int_id}}>
+                                    <!--<li><button title="Delete" onclick="delint({{i.int_id}})"><span class="fa fa-trash-o"></span></button></li>-->
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="row mt-4 mt-lg-5 justify-content-between align-items-center">
+                <div class="col-auto">
+                    <nav class="mt-3 mt-sm-0" aria-label="Jobs list pagination">
+                        <ul class="pagination pxp-pagination">
+                            {% if count >= 11 %}
+                            {% if pe.has_previous %}
+                                {% if GET_params %}
+                                <li class="page-item"><a style="padding: 0.7rem" href="?{{GET_params.urlencode}}&amp;page={{pe.previous_page_number}}" class="page-link"><i class="fa fa-chevron-left" aria-hidden="true"></i></a></li>
+                                {% else %}
+                                <li class="page-item"><a style="padding: 0.7rem" href="?page={{pe.previous_page_number}}" class="page-link"><i class="fa fa-chevron-left" aria-hidden="true"></i></a></li>
+                                {% endif %}
+                            {% endif %}
+
+                            {% if pe.number|add:'-4' > 1 %}
+                                {% if GET_params %}
+                                <li class="page-item"><a style="padding: 0.7rem" href="?{{GET_params.urlencode}}&amp;page={{ pe.number|add:'-5' }}" class="page-link">&hellip;</a></li>
+                                {% else %}
+                                <li class="page-item"><a style="padding: 0.7rem" href="?page={{ pe.number|add:'-5' }}" class="page-link">&hellip;</a></li>
+                                {% endif %}
+                            {% endif %}
+
+                            {% for i in pe.paginator.page_range %}
+                                {% if pe.number == i %}
+                                    <li class="page-item active" aria-current="page">
+                                        <span style="padding: 0.7rem" class="page-link">{{pe.number}}</span>
+                                    </li>
+                                {% elif i > pe.number|add:'-5' and i < pe.number|add:'5' %}
+                                    {% if GET_params %}
+                                    <li class="page-item"><a style="padding: 0.7rem" href="?{{GET_params.urlencode}}&amp;page={{ i }}" class="page-link">{{i}}</a></li>
+                                    {% else %}
+                                    <li class="page-item"><a style="padding: 0.7rem" href="?page={{ i }}" class="page-link">{{i}}</a></li>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if pe.paginator.num_pages > pe.number|add:'4' %}
+                                {% if GET_params %}
+                                <li class="page-item"><a style="padding: 0.7rem" href="?{{GET_params.urlencode}}&amp;page={{ pe.number|add:'5' }}" class="page-link">&hellip;</a></li>
+                                {% else %}
+                                <li class="page-item"><a style="padding: 0.7rem" href="?page={{ pe.number|add:'5' }}" class="page-link">&hellip;</a></li>
+                                {% endif %}
+                            {% endif %}
+
+                            {% if pe.has_next %}
+                                {% if GET_params %}
+                                <li class="page-item"><a style="padding: 0.7rem" href="?{{GET_params.urlencode}}&amp;page={{ pe.next_page_number }}" class="page-link"><i class="fa fa-chevron-right" aria-hidden="true"></i></a></li>
+                                {% else %}
+                                <li class="page-item"><a style="padding: 0.7rem" href="?page={{pe.next_page_number}}" class="page-link"><i class="fa fa-chevron-right" aria-hidden="true"></i></a></li>
+                                {% endif %}
+                            {% endif %}
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                <div class="col-auto">
+                    {% comment %} <a href="#" class="btn rounded-pill pxp-section-cta mt-3 mt-sm-0">Show me more<span class="fa fa-angle-right"></span></a> {% endcomment %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade pxp-user-modal" id="pxp-test-modal" aria-hidden="true" aria-labelledby="testModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered widthadjuster">
+        <div class="modal-content">
+            <div class="modal-body" style="padding: 1rem !important">
+                <section>
+                    <div class="pxp-container">
+                        <div class="pxp-single-job-content pxp-has-columns" style="margin-top: 0px">
+                            <div class="row">
+                                <div class="col-lg-7 col-xl-8 col-xxl-9">
+                                    <div class="row justify-content-between align-items-center mt-4 mt-lg-5">
+                                        <div class="col-xl-8 col-xxl-6">
+                                            <h1 id="name3"></h1>
+                                        </div>
+                                    </div>
+        
+                                    <div class="pxp-single-job-content-details mt-4 mt-lg-5" id="questions">
+                                        <div id="ind">
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-5 col-xl-4 col-xxl-3">
+                                    <div class="pxp-single-job-side-panel mt-5 mt-lg-0">
+                                        <div>
+                                            <div class="pxp-single-job-side-info-label pxp-text-light">Time Limit</div>
+                                            <div class="pxp-single-job-side-info-data" id="timelimit"></div>
+                                        </div>
+                                        <div class="mt-4">
+                                            <div class="pxp-single-job-side-info-label pxp-text-light">Created Date</div>
+                                            <div class="pxp-single-job-side-info-data" id="created_date"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>        
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade pxp-user-modal" id="pxp-feedback-modal" aria-hidden="true" aria-labelledby="feedbackModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered widthadjuster" style="justify-content: center">
+        <div class="modal-content" style="width: 35rem">
+            <div class="modal-header" style="padding: 10px">
+                <h3 id="user_name2"></h3>
+            </div>
+            <hr style="margin: 0px" />
+            <div class="modal-body" style="padding: 1rem !important">
+                <div class="pxp-company-dashboard-jobs-bulk-actions" style="margin-left: auto; flex-direction: column">
+                    <div id="feedback_link">
+                    </div>
+                </div>
+            </div>
+            <hr style="margin: 0px" />
+            <div class="modal-header" style="padding: 10px">
+                <p id="descri"></p>
+            </div>
+            <hr style="margin: 0px" />
+            <div class="modal-header" style="padding: 10px" id="already_feedback">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="popup" class="popup">
+    <div class="popup-content">
+        <div class="d-flex justify-content-end">
+            <button id="close-popup" class="btn btn-secondary" onclick="closePopup()"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="container mt-5">
+            <h5 class="text-primary">Provide Interview panel Email Address.</h5>
+            <p class="text-muted">Email Address.</p>
+        </div>
+        <div class="modal-body" style="padding: 1rem !important">
+            <div class="pxp-company-dashboard-jobs-bulk-actions" style="margin-left: auto">
+                <input type="email" class="form-control" name="panelEmail" placeholder="Panel Email Address....." required>
+                <button class="btn ms-2" onclick="panelEmailSend()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+{% endblock %}
+
+{% block script %}
+
+$(document).ready(function () {
+    $('#cdas').removeClass('pxp-active');
+    $('#cedi').removeClass('pxp-active');
+    $('#cnew').removeClass('pxp-active');
+    $('#cman').removeClass('pxp-active');
+    $('#ccan').removeClass('pxp-active');
+    $('#csub').removeClass('pxp-active');
+    $('#ccha').removeClass('pxp-active');
+    $('#cinb').removeClass('pxp-active');
+    $('#cnot').removeClass('pxp-active');
+    $('#scn').removeClass('pxp-active');
+    $('#qui').removeClass('pxp-active');
+    $('#inr').addClass('pxp-active');
+    $('#pen').removeClass('pxp-active');
+})
+var int_id;
+
+var $rows = $('#table tbody tr');
+$('#search').keyup(function() {
+    var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
+    
+    $rows.show().filter(function() {
+        var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+        return !~text.indexOf(val);
+    }).hide();
+});
+
+$("[name='chek']").change(function(){
+    let a=0;
+    checkboxes = document.getElementsByName('chek');
+    let n=checkboxes.length
+    for(let i=0;i<n;i++) {
+      if(checkboxes[i].checked==false)
+      {
+        a=a+1;
+      }
+    }
+    if(a==0)
+    {
+        $("[name=all]").prop('checked', true);
+    }
+    else
+    {
+        $("[name=all]").prop('checked', false);
+    }
+})
+
+function toggle(source) {
+    checkboxes = document.getElementsByName('chek');
+    for(var i=0, n=checkboxes.length;i<n;i++) {
+      checkboxes[i].checked = source.checked;
+    }
+}
+
+function delint(id)
+{
+    $.ajax(
+        {
+            type:"POST",
+            url: "",
+            data:{
+                    'int_id': id,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function( data ) 
+            {
+                location.reload()
+            }
+    })
+}
+// Function to show the popup
+function showPopup(id) {
+    int_id=id
+    document.getElementById("popup").style.display = "flex";
+}
+
+// Function to close the popup
+function closePopup() {
+    document.getElementById("popup").style.display = "none";
+}
+
+// Show the popup when the page loads
+//window.onload = function() {
+  //  showPopup();
+//};
+
+// Close the popup when the close button is clicked
+document.getElementById("close-popup").addEventListener("click", closePopup);
+
+function panelEmailSend(){
+    var id = int_id;
+    let panelEmail=$("[name='panelEmail']").val();
+    $.ajax(
+        {
+            type:"POST",
+            url: "{% url 'mpoweradmin:interview_panel' pk %}",
+            data:{
+                    'int_id': id,
+                    'email':panelEmail,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function( data ) 
+            {
+                location.reload()
+            }
+    })
+}
+
+function multiple()
+{
+    let action=$("[name='act']").val();
+    if(action=='a')
+    {
+        alert("Please select an appropriate action")
+        return;
+    }
+    let ids=[];
+    $("[name='chek']:checked").map(function () {
+        ids.push(this.value);
+    })
+    if(ids.length==0)
+    {
+        if(action=="b")
+        {
+            alert("Please select at least one of the records to apply delete operation")
+        }
+        else if(action=="c")
+        {
+            alert("Please select at least one of the records to apply done operation")
+        }
+        return;
+    }
+    let act_val="";
+    if(action=="b")
+    {
+        act_val="delall";
+    }
+    else if(action=="c")
+    {
+        act_val="donall";
+    }
+    $.ajax(
+        {
+            type:"POST",
+            url: "",
+            data:{
+                    'ids': ids,
+                    'act': act_val,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function( data ) 
+            {
+                location.reload()
+            }
+    })
+}
+
+function done(id)
+{
+    $.ajax(
+        {
+            type:"POST",
+            url: "{% url 'employer:done' pk %}",
+            data:{
+                    'id': id,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function( data ) 
+            {
+                location.reload();
+            }
+    })
+}
+
+function feedb(id)
+{
+    $.ajax(
+        {
+            type:"GET",
+            url: "{% url "employer:get_link" pk %}",
+            data:{
+                    'int_id': id
+            },
+            success: function( data ) 
+            {
+                if(data['message']=="X")
+                {
+                    $('#user_name2').text(data['name']);
+                    $('#feedback_link').text("Interview must be completed before giving feedback!");
+                }
+                else
+                {
+                    $('#user_name2').text(data['name']);
+                    $('#feedback_link').text("Link: "+data['url']);
+                    $('#descri').text("Please share this link with other panel members of the interview for feedback");
+                    $('already_feedback').empty();
+                    let mainsec=document.getElementById('already_feedback');
+                    let ul=document.createElement('ul');
+                    let info=data['info'];
+                    if(info[0]==false)
+                    {
+                        if(info[1]==false)
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        let li=document.createElement('li');
+                        li.innerHTML="Feedback by candidate: "+info[0];
+                        ul.append(li);
+                        if(info[1]==false)
+                        {
+                            return;
+                        }
+                    }
+                    let li2=document.createElement('li');
+                    li2.innerHTML="Feedback given by panel members: "
+                    ul.append(li2);
+                    for(let i=1;i<info.length;i++)
+                    {
+                        li2=document.createElement('li');
+                        li2.innerHTML=info[i][0]+" : "+info[i][1];
+                        ul.append(li2);
+                    }
+                    mainsec.append(ul);
+                }
+            }
+    })
+}
+
+{% endblock %}

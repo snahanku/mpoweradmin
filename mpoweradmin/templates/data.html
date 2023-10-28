@@ -1,0 +1,38 @@
+<html>
+<head>
+    <title>data</title>
+</head>
+<body>
+    ///seminar data///
+{% for value in data %}
+<p>{{value.Seminar_title}}</p>
+<p>{{value.Seminar_Date}}</p>
+<p>{{value.Seminar_Time}}</p>
+<p>{{value.Seminar_Venue}}</p>
+<p>{{value.Venue_location}}</p>
+<p>{{value.Venue_offline_location}}</p>
+<p>{{value.Technology_tags}}</p>
+<p>{{value.Host_Company}}</p>
+<p>{{value.Links}}</p>
+{% endfor%}
+//// test data///
+{% for value in testData %}
+   <p> {{value.MockTest_id}}</p>
+  <p> {{ value.CompanyName}}</p>
+  <p>  {{value.companylogo}}</p>
+  <p> {{value.Role_desc}}</p>
+  <p> {{value.Technology_tag}}</p>
+  <p> {{ valuee.Question_1}}</p>
+  <p> {{ value.Answer_1}}</p>
+  <p> {{value.Question_2}}</p>
+  <p> {{value.Answer_2}}</p>
+  <p> {{value.Question_3}}</p>
+  <p> {{value.Answer_3}}</p>
+  <p> {{value.Question_4}}</p>
+   <p> {{value.Answer_4}}</p>
+   <p>{{ value.Question_5}}</p>
+   <p>{{ value.Answer_5}}</p>
+
+{% endfor %}
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .main {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .form-container {
+            background-color: #f5f5f5;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-label {
+            font-weight: bold;
+        }
+
+        .form-control {
+            margin-top: 5px;
+        }
+
+        .form-control.round {
+            border-radius: 15px;
+        }
+
+        .shadow {
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .move-right {
+            margin-right: 10px;
+        }
+
+        .move-down {
+            margin-top: 10px;
+        }
+
+        .center-text {
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="back_ground">
+    <div class="main">
+        <h4>Create Task</h4>
+        <div class="form-container">
+            <form action="" method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col">
+                        <label>MockTest Id:</label>
+                        <input type="text" class="form-control round shadow" id="mock_id" name="mock_id">
+                    </div>
+                    <div class="col">
+                        <label>Company Name:</label>
+                        <input type="text" class="form-control round shadow" placeholder="company name" id="company_name" name="company_name">
+                    </div>
+                    <div class="col">
+                        <label for="company_logo" class="form-label">Company logo:</label>
+                        <input type="file" class="form-control round shadow" placeholder="xyz.jpg" id="company_logo" name="company_logo">
+                    </div>
+                </div>
+                <div class="row move-down">
+                    <div class="col">
+                        <label class="center-text">Role Description</label>
+                        <input type="textarea" class="form-control round shadow" placeholder="This role is all about...." id="role_desc" name="role_desc">
+                    </div>
+                    <div class="col move-right">
+                        <label>Technology Tag</label>
+                        <input type="text" class="form-control round shadow" placeholder="technology tags" id="technology" name="technology">
+                    </div>
+                </div>
+                <p class="center-text">--------Mock Test Questions & Answers--------</p>
+                <div class="row move-down">
+                    <div class="col">
+                        <label class="text-left">Question 1:</label>
+                        <input type="text" class="form-control round shadow" placeholder="Question 1" id="question_1" name="question_1">
+                    </div>
+                    <div class="col move-right">
+                        <label class="text-right">Answer</label>
+                        <input type="text" class="form-control round shadow" placeholder="answer" id="answer_1" name="answer_1">
+                    </div>
+                </div>
+                <div class="row move-down">
+                    <div class="col">
+                        <label>Question 2:</label>
+                        <input type="text" class="form-control round shadow" placeholder="Question 2" id="question_2" name="question_2">
+                    </div>
+                    <div class="col move-right">
+                        <label>Answer:</label>
+                        <input type="text" class="form-control round shadow" placeholder="answer" id="answer_2" name="answer_2">
+                    </div>
+                </div>
+                <div class="row move-down">
+                    <div class="col">
+                        <label>Question 3</label>
+                        <input type="text" class="form-control round shadow" placeholder="Question 3" id="question_3" name="question_3" required>
+                    </div>
+                    <div class="col move-right">
+                        <label>Answer</label>
+                        <input type="text" class="form-control round shadow" placeholder="answer" id="answer_3" name="answer_3" required>
+                    </div>
+                </div>
+                <div class="row move-down">
+                    <div class="col">
+                        <label>Question 4</label>
+                        <input type="text" class="form-control round shadow" placeholder="Question 4" id="question_4" name="question_4" required>
+                    </div>
+                    <div class="col move-right">
+                        <label>Answer</label>
+                        <input type="text" class="form-control round shadow" placeholder="answer" id="answer_4" name="answer_4" required>
+                    </div>
+                </div>
+                <div class="row move-down">
+                    <div class="col">
+                        <label>Question 5</label>
+                        <input type="text" class="form-control round shadow" placeholder="Question 5" id="question_5" name="question_5" required>
+                    </div>
+                    <div class="col move-right">
+                        <label>Answer</label>
+                        <input type="text" class="form-control round shadow" placeholder="answer" id="answer_5" name="answer_5" required>
+                    </div>
+                </div>
+                <div class="row move-down">
+                    <div class="col">
+                        <button type="button" class="btn btn-primary">Single toggle</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
